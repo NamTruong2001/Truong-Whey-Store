@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -37,19 +38,19 @@ import edu.hanu.truongwheystore.R;
 public class HomeFragment extends Fragment {
     private ProductAdapter productAdapter;
     private RecyclerView recyclerView;
-    List<Product> products = HomeActivity.products;
+    private List<Product> products;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        //products = new ArrayList<>();
-        productAdapter = new ProductAdapter(products, getActivity());
+        products = new ArrayList<>();
+
         super.onCreate(savedInstanceState);
 
 
     }
 
     private void getProducts() {
-        products = new ArrayList<>();
+        products.clear();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("Products").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -58,7 +59,10 @@ public class HomeFragment extends Fragment {
                     for (QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         Product product = documentSnapshot.toObject(Product.class);
                         Log.d(TAG, documentSnapshot.getId() + " => " + documentSnapshot.getData());
+                        product.setHomeType(true);
+                        product.setId(documentSnapshot.getId());
                         products.add(product);
+
                         productAdapter.notifyDataSetChanged();
                     }
                 } else {
@@ -75,11 +79,13 @@ public class HomeFragment extends Fragment {
         //getProducts();
         //Log.d("Products", products.toString());
         View v = inflater.inflate(R.layout.fragment_home, container, false);
-
+        productAdapter = new ProductAdapter(getActivity());
+        productAdapter.setData(products);
         recyclerView = v.findViewById(R.id.rcv_popular);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setAdapter(productAdapter);
         recyclerView.setLayoutManager(gridLayoutManager);
+        getProducts();
 
         return v;
     }

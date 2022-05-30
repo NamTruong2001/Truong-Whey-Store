@@ -8,4 +8,5 @@
     <string name="favourite">Favourite</string>
     <string name="fav">Favourite</string>
     <string name="view_detail">User</string>
+    <string name="product_desc">Description</string>
 </resources>

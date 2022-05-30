@@ -44,6 +44,7 @@ public class HomeActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Product product = document.toObject(Product.class);
+                                product.setHomeType(true);
                                 products.add(product);
                                 Log.d("Proddducts", document.getId() + " => " + document.getData());
                             }
@@ -103,6 +104,7 @@ public class HomeActivity extends AppCompatActivity {
     private void setUpViewPager() {
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         homeViewPager.setAdapter(viewPagerAdapter);
+        homeViewPager.setOffscreenPageLimit(5);
         homeViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {

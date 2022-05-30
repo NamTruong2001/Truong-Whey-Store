@@ -1,66 +1,129 @@
 package edu.hanu.truongwheystore.Fragment;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.hanu.truongwheystore.Adapter.ProductAdapter;
+import edu.hanu.truongwheystore.Model.Product;
 import edu.hanu.truongwheystore.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SearchFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class SearchFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private RecyclerView recyclerView;
+    private List<Product> productList;
+    private ProductAdapter productAdapter;
+    private SearchView searchView;
 
     public SearchFragment() {
+        productList = new ArrayList<>();
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SearchFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SearchFragment newInstance(String param1, String param2) {
-        SearchFragment fragment = new SearchFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
+
     }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        View v = inflater.inflate(R.layout.fragment_search, container, false);
+        recyclerView = v.findViewById(R.id.search_fragment_rcv);
+        searchView = v.findViewById(R.id.searchView);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchProduct(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        productAdapter = new ProductAdapter(getContext());
+        productAdapter.setData(productList);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setAdapter(productAdapter);
+        return v;
+    }
+
+    private void searchProduct(String newText) {
+        final ProgressDialog pd = new ProgressDialog(getContext());
+        pd.setMessage("Please wait");
+        pd.show();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("Products").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                pd.dismiss();
+                productList.clear();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    Product product = doc.toObject(Product.class);
+
+                    product.setHomeType(false);
+                    if (product.getName().toLowerCase().contains(newText.toLowerCase())) {
+                        productList.add(product);
+                        Log.d("Products", product.toString());
+                    }
+                }
+                productAdapter.notifyDataSetChanged();
+            }
+        });
+        /*
+        db.collection("Products").whereGreaterThanOrEqualTo("name", newText.toLowerCase())
+                .whereLessThanOrEqualTo("name", newText.toLowerCase() + "\uf8ff").get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        productList.clear();
+                        pd.dismiss();
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            Product product = doc.toObject(Product.class);
+                            Log.d("Products", product.toString());
+                            product.setHomeType(false);
+                            productList.add(product);
+                            productAdapter.notifyDataSetChanged();
+
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(), "Error!", Toast.LENGTH_SHORT).show();
+            }
+        });
+         */
     }
 }
