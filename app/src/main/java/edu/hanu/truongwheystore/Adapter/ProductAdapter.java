@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.hanu.truongwheystore.FormatHelper;
+import edu.hanu.truongwheystore.Fragment.FavouriteFragment;
 import edu.hanu.truongwheystore.Model.Product;
 import edu.hanu.truongwheystore.ProductDetailActivity;
 import edu.hanu.truongwheystore.R;
@@ -91,6 +92,8 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
                                                     Toast.makeText(context, "Add new success", Toast.LENGTH_SHORT).show();
+                                                    FavouriteFragment.favPro.add(product);
+                                                    FavouriteFragment.productAdapter.notifyDataSetChanged();
                                                 } else {
                                                     Toast.makeText(context, "Add new fail", Toast.LENGTH_SHORT).show();
                                                 }
@@ -103,6 +106,8 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
                                                     Toast.makeText(context, "Delete from fav", Toast.LENGTH_SHORT).show();
+                                                    FavouriteFragment.favPro.remove(product);
+                                                    FavouriteFragment.productAdapter.notifyDataSetChanged();
                                                 } else {
                                                     Toast.makeText(context, "Delete fail", Toast.LENGTH_SHORT).show();
                                                 }
@@ -119,6 +124,8 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
                                                 Toast.makeText(context, "Create new success", Toast.LENGTH_SHORT).show();
+                                                FavouriteFragment.favPro.add(product);
+                                                FavouriteFragment.productAdapter.notifyDataSetChanged();
                                             } else {
                                                 Toast.makeText(context, "Create new fail", Toast.LENGTH_SHORT).show();
                                             }
